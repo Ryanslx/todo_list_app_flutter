@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Task {
   String title;
   bool isDone;
@@ -9,6 +11,10 @@ class Task {
   }
 
   factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(title: map['title'], isDone: map['isDone']);
+    return Task(title: map['title'] ?? '', isDone: map['isDone'] ?? false);
   }
+
+  String toJson() => json.encode(toMap());
+
+  factory Task.fromJson(String source) => Task.fromMap(json.decode(source));
 }

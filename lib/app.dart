@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:todo_list_app/pages/principal_page.dart';
 
 class MyApp extends StatelessWidget {
@@ -8,12 +7,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Todo List App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: PrincipalPage(tarefas: []),
+      home: const PrincipalPage(tarefas: []),
     );
   }
 }

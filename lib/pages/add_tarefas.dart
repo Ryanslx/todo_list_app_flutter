@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AddTarefaPage extends StatelessWidget {
-  final TextEditingController _controller = TextEditingController();
-
   AddTarefaPage({super.key});
+
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Adicionar Tarefa",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Adicionar Tarefa"),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
@@ -40,8 +37,8 @@ class AddTarefaPage extends StatelessWidget {
               onPressed: () {
                 if (_controller.text.isNotEmpty) {
                   Navigator.pop(context, {
-                    "titulo": _controller.text,
-                    "feito": false,
+                    "title": _controller.text,
+                    "isDone": false,
                   });
                 }
               },

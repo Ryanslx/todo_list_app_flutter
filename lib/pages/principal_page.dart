@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:todo_list_app/pages/add_tarefas.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+import '../task_model.dart';
+import 'add_tarefas.dart';
 
 class PrincipalPage extends StatefulWidget {
   const PrincipalPage({super.key, required List tarefas});
@@ -9,7 +13,33 @@ class PrincipalPage extends StatefulWidget {
 }
 
 class _PrincipalPageState extends State<PrincipalPage> {
-  List<Map<String, dynamic>> _tarefas = [];
+  List<Task> _tarefas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarTarefas();
+  }
+
+  Future<void> _carregarTarefas() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? tarefasJson = prefs.getString('tarefas');
+
+    if (tarefasJson != null) {
+      List<dynamic> lista = json.decode(tarefasJson);
+      setState(() {
+        _tarefas = lista.map((e) => Task.fromMap(e)).toList();
+      });
+    }
+  }
+
+  Future<void> _salvarTarefas() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> listaMap = _tarefas
+        .map((t) => t.toMap())
+        .toList();
+    prefs.setString('tarefas', json.encode(listaMap));
+  }
 
   void _abrirAddTarefaPage() async {
     final novaTarefa = await Navigator.push(
@@ -19,8 +49,9 @@ class _PrincipalPageState extends State<PrincipalPage> {
 
     if (novaTarefa != null) {
       setState(() {
-        _tarefas.add(novaTarefa);
+        _tarefas.add(Task.fromMap(novaTarefa));
       });
+      _salvarTarefas();
     }
   }
 
@@ -28,12 +59,14 @@ class _PrincipalPageState extends State<PrincipalPage> {
     setState(() {
       _tarefas.removeAt(index);
     });
+    _salvarTarefas();
   }
 
   void _toggleFeito(int index, bool? value) {
     setState(() {
-      _tarefas[index]["feito"] = value ?? false;
+      _tarefas[index].isDone = value ?? false;
     });
+    _salvarTarefas();
   }
 
   @override
@@ -49,29 +82,31 @@ class _PrincipalPageState extends State<PrincipalPage> {
           ],
         ),
       ),
-      body: ListView.builder(
-        itemCount: _tarefas.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: Checkbox(
-              value: _tarefas[index]["feito"],
-              onChanged: (value) => _toggleFeito(index, value),
+      body: _tarefas.isEmpty
+          ? const Center(child: Text("Nenhuma tarefa cadastrada"))
+          : ListView.builder(
+              itemCount: _tarefas.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Checkbox(
+                    value: _tarefas[index].isDone,
+                    onChanged: (value) => _toggleFeito(index, value),
+                  ),
+                  title: Text(
+                    _tarefas[index].title,
+                    style: TextStyle(
+                      decoration: _tarefas[index].isDone
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _removerTarefa(index),
+                  ),
+                );
+              },
             ),
-            title: Text(
-              _tarefas[index]["titulo"],
-              style: TextStyle(
-                decoration: _tarefas[index]["feito"]
-                    ? TextDecoration.lineThrough
-                    : null,
-              ),
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _removerTarefa(index),
-            ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _abrirAddTarefaPage,
         backgroundColor: Colors.black,
